@@ -18,5 +18,5 @@ Code for all analysis in the article examining the associations of LPA and MVPA 
 | 9 - Estimate relative effects (RRs and RDs) from primary analysis. | [Relative results](Code/2025a/9_Relative_results_HPC.R) |
 | 10 - Create relative effect plots. | [Relative results figures](Code/2025a/10_Relative_results_figures.R) |
 | 11 - Stratified analysis by sex and age group. | [Age and sex](Code/2025a/11_By_age_and_sex.R) |
-| 12 - Relative effects for specific counterfactual scenarios. | [Scenarios](Code/2025a/12_Scenario_comparison.R) |
+| 12 - Relative effects for specific counterfactual scenarios. | [Scenarios](Code/2025a/12_Scenario_comparisons.R) |
 
