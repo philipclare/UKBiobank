@@ -1,7 +1,7 @@
 ######################################################################################
 ##   
 ## Analysis of light physical activity and survival
-## Create figures for primary analysis
+## Create figures for sensitivity analyses
 ## By: Philip Clare
 ## Date: 29/7/2024
 ## Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
