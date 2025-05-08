@@ -16,7 +16,7 @@ if (Sys.getenv("NCPUS")!="") {
   .libPaths("/home/z3312911/RPackages/")
   workdir <- "/home/z3312911/LPA/"
 } else if (Sys.info()[['sysname']]=="Windows") {
-  workdir <- "D:/The University of Sydney (Staff)/Susan Luo - data and R/"
+  workdir <- "C:/Users/pcla5984/The University of Sydney (Staff)/Susan Luo - data and R/"
 } else if (Sys.info()[['sysname']]=="Darwin") {
   workdir <- "/Users/pjclare/Library/CloudStorage/OneDrive-SharedLibraries-TheUniversityofSydney(Staff)/Susan Luo - data and R/" # MAC
 }
@@ -68,9 +68,9 @@ construct_cis <- function (res) {
 # 3. Load analysis results
 #-------------------------------------------------------------------------------------
 
-results_lpa <- readRDS(paste0(workdir,"Results/Model Results - LPA.rds"))
-results_mvpa <- readRDS(paste0(workdir,"Results/Model Results - MVPA.rds"))
-results_both <- readRDS(paste0(workdir,"Results/Model Results - Combined.rds"))
+results_lpa <- readRDS(paste0(workdir,"Results/Model Results - Primary - LPA.rds"))
+results_mvpa <- readRDS(paste0(workdir,"Results/Model Results - Primary - MVPA.rds"))
+results_both <- readRDS(paste0(workdir,"Results/Model Results - Primary - Combined.rds"))
 
 ######################################################################################
 # 4. Pool results over imputations
@@ -190,5 +190,5 @@ secondary_figure
 # 7. Save figures
 #-------------------------------------------------------------------------------------
 
-ggsave(paste0(workdir,"Results/figure 1 20250301.png"),secondary_figure)
-ggsave(paste0(workdir,"Results/figure 2 20250301.png"),primary_figure)
+ggsave(paste0(workdir,"Results/figure 1 20250501.png"),secondary_figure)
+ggsave(paste0(workdir,"Results/figure 2 20250501.png"),primary_figure)

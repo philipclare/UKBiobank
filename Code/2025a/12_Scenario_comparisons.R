@@ -35,23 +35,25 @@ lapply(libs, library, character.only = TRUE)
 
 get_diffs <- function (data) {
   
-  comp_table <- matrix(c(22,44,22,22,44,0,0,300,60,60,0,0,0,22,44,45,90,300,300,300),nrow=5)
+  comp_table <- matrix(c(22,0,11,22,44,60,60,60,60,60,0,0,11,22,44,300,300,300,300,300),nrow=5)
   
   fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = 2) + ns(LPA, df = 2) + ns(MVPA*LPA, df = 4) + 
-                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 1) + 
+                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 3) + 
                  sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
                  b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
                  b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
-                 b_health_good + b_health_fair + b_health_poor + 
-                 b_bmi_underweight + I(b_bmi_underweight*MVPA) + I(b_bmi_underweight*LPA) + 
-                 b_bmi_overweight + I(b_bmi_overweight*MVPA) + I(b_bmi_overweight*LPA) + 
-                 b_bmi_obese + I(b_bmi_obese*MVPA) + I(b_bmi_obese*LPA) + 
-                 b_alc_ex + b_alc_current_infrequent + b_alc_current_weekly +  
-                 b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
-                 I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
-                 seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                 TDI_bsl + valid_weartime_indays,
-               data = data)
+                 b_health_good + b_health_fair + b_health_poor +
+                 b_bmi_underweight + I(b_bmi_underweight*MVPA) + I(b_bmi_underweight*LPA) +
+                 b_bmi_overweight + I(b_bmi_overweight*MVPA) + I(b_bmi_overweight*LPA) +
+                 b_bmi_obese + I(b_bmi_obese*MVPA) + I(b_bmi_obese*LPA) +
+                 b_alc_ex + b_alc_current_infrequent + b_alc_current_weekly + 
+                 b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current +
+                 I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score +
+                 seasonality_Spring + seasonality_Summer + seasonality_Winter +
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
+               data = data,
+               df = 3)
   
   predict <- do.call(rbind,lapply(seq(1,5), function (x){
     mvpa_ref <- comp_table[x,1]
@@ -211,7 +213,7 @@ tab_data$rr.conf.high <- tab_data$rr + qnorm(0.975)*tab_data$rr.se
 
 View(tab_data)
 
-wb1 <- loadWorkbook(paste0(workdir,"Results/scenario_comparisons.xlsx"), create = TRUE)
+wb1 <- loadWorkbook(paste0(workdir,"Results/scenario_comparisons 20250501.xlsx"), create = TRUE)
 createSheet(wb1, name = "Comp")
 writeWorksheet(wb1,tab_data,"Comp",startRow = 1, startCol = 1, header = TRUE)
 saveWorkbook(wb1)

@@ -40,11 +40,17 @@ primary_data <- lapply(seq(1,20), function (x) {
   
   data <- readRDS(file=paste0(workdir,"Data/Imputed/Imputed_data_primary_",x,".rds"))
   
-  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc"),
+  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc","b_sleep_cat"),
                      remove_first_dummy = TRUE,
                      remove_selected_columns = TRUE)
   
   data$logage <- log(data$age_acc)
+  
+  data <- data %>%
+    rename(
+      b_sleep_cat_enough = 'b_sleep_cat_7-9 hrs/day', 
+      b_sleep_cat_toomuch = 'b_sleep_cat_>9 hrs/day'
+    )
   
   data
   
@@ -54,11 +60,17 @@ s1_data <- lapply(seq(1,20), function (x) {
   
   data <- readRDS(file=paste0(workdir,"Data/Imputed/Imputed_data_s1_",x,".rds"))
   
-  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc"),
+  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc","b_sleep_cat"),
                      remove_first_dummy = TRUE,
                      remove_selected_columns = TRUE)
   
   data$logage <- log(data$age_acc)
+  
+  data <- data %>%
+    rename(
+      b_sleep_cat_enough = 'b_sleep_cat_7-9 hrs/day', 
+      b_sleep_cat_toomuch = 'b_sleep_cat_>9 hrs/day'
+    )
   
   data
   
@@ -68,11 +80,17 @@ s2_data <- lapply(seq(1,20), function (x) {
   
   data <- readRDS(file=paste0(workdir,"Data/Imputed/Imputed_data_s2_",x,".rds"))
   
-  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc"),
+  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc","b_sleep_cat"),
                      remove_first_dummy = TRUE,
                      remove_selected_columns = TRUE)
   
   data$logage <- log(data$age_acc)
+  
+  data <- data %>%
+    rename(
+      b_sleep_cat_enough = 'b_sleep_cat_7-9 hrs/day', 
+      b_sleep_cat_toomuch = 'b_sleep_cat_>9 hrs/day'
+    )
   
   data
   
@@ -82,11 +100,17 @@ s3_data <- lapply(seq(1,20), function (x) {
   
   data <- readRDS(file=paste0(workdir,"Data/Imputed/Imputed_data_s3_",x,".rds"))
   
-  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc"),
+  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc","b_sleep_cat"),
                      remove_first_dummy = TRUE,
                      remove_selected_columns = TRUE)
   
   data$logage <- log(data$age_acc)
+  
+  data <- data %>%
+    rename(
+      b_sleep_cat_enough = 'b_sleep_cat_7-9 hrs/day', 
+      b_sleep_cat_toomuch = 'b_sleep_cat_>9 hrs/day'
+    )
   
   data
   
@@ -96,11 +120,17 @@ s4_data <- lapply(1, function (x) {
   
   data <- readRDS(file=paste0(workdir,"Data/complete_case_data.rds"))
   
-  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc"),
+  data <- dummy_cols(data, select_columns = c("seasonality","sex","ethnicity","b_educ","b_income","b_health","b_employ","b_bmi","b_smk","b_alc","b_sleep_cat"),
                      remove_first_dummy = TRUE,
                      remove_selected_columns = TRUE)
   
   data$logage <- log(data$age_acc)
+  
+  data <- data %>%
+    rename(
+      b_sleep_cat_enough = 'b_sleep_cat_7-9 hrs/day', 
+      b_sleep_cat_toomuch = 'b_sleep_cat_>9 hrs/day'
+    )
   
   data
   

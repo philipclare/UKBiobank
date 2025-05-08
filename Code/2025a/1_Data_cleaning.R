@@ -49,20 +49,27 @@ data_diag <- read.csv(file = "~/Library/CloudStorage/OneDrive-TheUniversityofSyd
 data_cov <- read.csv(file = "~/Library/CloudStorage/OneDrive-TheUniversityofSydney(Staff)/Post-PhD/UK Biobank/ukb670620tab&r/data_bsl_covariates.csv", header = TRUE) %>% 
   rename(n_eid = f.eid)
 
-# 2.4. combine the data together
+# 2.4. Load the data - disease (diabetes, hypertension, high cholesterol, affective disorders) data
+data_disease <- read.csv(file = "~/Library/CloudStorage/OneDrive-TheUniversityofSydney(Staff)/Post-PhD/UK Biobank/ukb671666_r&tab_for health outcomes/dia_hp_hchol_aff_acc.csv", header = TRUE) %>% 
+  rename(n_eid = f.eid)
+
+# 2.5. combine the data together
 data <- data_cov %>% 
   inner_join(data_ACC_PA, by = "n_eid", keep = FALSE) %>%
-  inner_join(data_diag, by = "n_eid", keep = FALSE)  # n=92,171
+  inner_join(data_diag, by = "n_eid", keep = FALSE) %>%  
+  inner_join(data_disease, by = "n_eid", keep = FALSE) # n=92,171
 
-rm(data_cov, data_ACC_PA, data_diag)
+rm(data_cov, data_ACC_PA, data_diag, data_disease)
 
 ######################################################################################
 # 3. Clean data
 #-------------------------------------------------------------------------------------
 
-# 3.1. Participants exclusion
+# 3.1. Participants exclusion - exclude those with CVD, cancers and Parkinson at ACC measurement & Unable to walk
 data <- data %>%
-  filter(CVDbase==0, cancerbase==0)  #n=71,878
+  filter(CVDbase==0, cancerbase==0, Parkinson!=1) %>%   #n=71,794
+  filter(unable_to_walk==0) %>%  # n=71,718 
+  filter(f_death > 0) # n=71,715
 
 data$center_0 <- as.factor(data$center_0)
 data$sex <- as.factor(data$sex)
@@ -71,6 +78,10 @@ data$edu_0_cat <- as.factor(data$edu_0_cat)
 data$HHincome_0_cat <- as.factor(data$HHincome_0_cat)
 data$employment_0_cat <- as.factor(data$employment_0_cat)
 data$HealthRating_0_cat <- as.factor(data$HealthRating_0_cat)
+data$diabetes <- as.factor(data$dia_acc_yesorno)
+data$hypertension <- as.factor(data$hp_acc_yesorno)
+data$highcholesterol <- as.factor(data$hchol_acc_yesorno)
+data$affective_disorder <- as.factor(data$aff_acc_yesorno)
 
 ######################################################################################
 data <- data %>%
@@ -90,7 +101,8 @@ data$LPA_cat <- cut(
   include.lowest = TRUE)
 
 cleaned_data <- data %>% 
-  select(-f.2188.0.0, -f.826.0.0)
+  select(-f.2188.0.0, -f.826.0.0, -PA_cat, -LTPA_METhr, -unable_to_walk, -Parkinson,
+         -dia_acc_yesorno, - hp_acc_yesorno, -hchol_acc_yesorno, -aff_acc_yesorno)
 
 ######################################################################################
 # 4. Save data
@@ -104,18 +116,18 @@ saveRDS(cleaned_data, paste0(workdir,"cleaned_data.rds"))
 data_for_sensitivity_poorhealthonly <- 
   data %>% 
   filter(HealthRating_0_cat!=4 | is.na(HealthRating_0_cat)) %>% 
-  select(-f.2188.0.0, -f.826.0.0)
+  select(-f.2188.0.0, -f.826.0.0) # n=70,341
 
 data_for_sensitivity_disability_poorhealth <- 
   data %>% 
   filter(HealthRating_0_cat!=4 | is.na(HealthRating_0_cat)) %>%
   filter(f.2188.0.0!=1 | is.na(f.2188.0.0)) %>% 
-  select(-f.2188.0.0, -f.826.0.0)
+  select(-f.2188.0.0, -f.826.0.0) # n=54,020
 
 data_for_sensitivity_shiftworker <- 
   data %>% 
   filter(f.826.0.0==-3 | f.826.0.0==-1 | f.826.0.0==1 | is.na(f.826.0.0)) %>% 
-  select(-f.2188.0.0, -f.826.0.0)
+  select(-f.2188.0.0, -f.826.0.0) # n=65,573
 
 saveRDS(data_for_sensitivity_poorhealthonly, "data_for_sensitivity_poorhealthonly.rds")
 saveRDS(data_for_sensitivity_disability_poorhealth, "data_for_sensitivity_disability_poorhealth.rds")

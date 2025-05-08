@@ -1,7 +1,7 @@
 ######################################################################################
 ##   
 ## Analysis of light physical activity and survival
-## Create figures for sensitivity analyses
+## Create figures for primary analysis
 ## By: Philip Clare
 ## Date: 29/7/2024
 ## Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
@@ -16,7 +16,7 @@ if (Sys.getenv("NCPUS")!="") {
   .libPaths("/home/z3312911/RPackages/")
   workdir <- "/home/z3312911/LPA/"
 } else if (Sys.info()[['sysname']]=="Windows") {
-  workdir <- "D:/The University of Sydney (Staff)/Susan Luo - data and R/"
+  workdir <- "C:/Users/pcla5984/The University of Sydney (Staff)/Susan Luo - data and R/"
 } else if (Sys.info()[['sysname']]=="Darwin") {
   workdir <- "/Users/pjclare/Library/CloudStorage/OneDrive-SharedLibraries-TheUniversityofSydney(Staff)/Susan Luo - data and R/" # MAC
 }
@@ -238,7 +238,7 @@ s4_figure
 # 7. Save figures
 #-------------------------------------------------------------------------------------
 
-ggsave(paste0(workdir,"Results/figure S1 20250301.png"),s1_figure)
-ggsave(paste0(workdir,"Results/figure S2 20250301.png"),s2_figure)
-ggsave(paste0(workdir,"Results/figure S3 20250301.png"),s3_figure)
-ggsave(paste0(workdir,"Results/figure S4 20250301.png"),s4_figure)
+ggsave(paste0(workdir,"Results/figure S1 20250501.png"),s1_figure)
+ggsave(paste0(workdir,"Results/figure S2 20250501.png"),s2_figure)
+ggsave(paste0(workdir,"Results/figure S3 20250501.png"),s3_figure)
+ggsave(paste0(workdir,"Results/figure S4 20250501.png"),s4_figure)

@@ -36,7 +36,7 @@ lapply(libs, library, character.only = TRUE)
 get_fit <- function (data) {
   
   fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = 2) + ns(LPA, df = 2) + ns(MVPA*LPA, df = 4) + 
-                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 1) + 
+                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 3) + 
                  sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
                  b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
                  b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
@@ -48,7 +48,8 @@ get_fit <- function (data) {
                  b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current +
                  I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score +
                  seasonality_Spring + seasonality_Summer + seasonality_Winter +
-                 TDI_bsl + valid_weartime_indays,
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                data = data,
                df = 3)
 }
@@ -56,7 +57,7 @@ get_fit <- function (data) {
 get_fit2 <- function (data) {
   
   fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = 2) + ns(LPA, df = 2) + ns(MVPA*LPA, df = 4) + 
-                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 1) + 
+                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 3) + 
                  sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
                  b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
                  b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
@@ -68,7 +69,8 @@ get_fit2 <- function (data) {
                  b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current +
                  I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score +
                  seasonality_Spring + seasonality_Summer + seasonality_Winter +
-                 TDI_bsl + valid_weartime_indays,
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                data = data,
                df = 3)
 }

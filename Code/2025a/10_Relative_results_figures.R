@@ -162,7 +162,7 @@ lpa_rr_figure <- ggplot(res_lpa[which(res_lpa$type=="rr"),],aes(x=LPA,y=est)) +
   ylab("Relative risk") +
   xlab("Minutes of light activity per day") + 
   scale_x_continuous(breaks=seq(0,600,60)) +
-  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.2,0.2),limits=c(0.0,1.2)) +
+  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.4,0.2),limits=c(0.0,1.4)) +
   theme_light() + 
   theme(legend.position = "bottom") +
   figure_theme
@@ -178,9 +178,9 @@ lpa_rd_figure <- ggplot(res_lpa[which(res_lpa$type=="rd"),],aes(x=LPA,y=est)) +
   figure_theme
 lpa_comb_figure <- ggarrange(lpa_rr_figure,lpa_rd_figure,nrow=2)
 
-ggsave(paste0(workdir,"Results/lpa rr 20250302.png"),lpa_rr_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/lpa rd 20250302.png"),lpa_rd_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/lpa rr and rd 20250302.png"),lpa_comb_figure,width = 2100,height = 2100,units = "px")
+ggsave(paste0(workdir,"Results/lpa rr 20250501.png"),lpa_rr_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/lpa rd 20250501.png"),lpa_rd_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/lpa rr and rd 20250501.png"),lpa_comb_figure,width = 2100,height = 2100,units = "px")
 
 mvpa_rr_figure <- ggplot(res_mvpa[which(res_mvpa$type=="rr"),],aes(x=MVPA,y=est)) + 
   geom_line(colour="#00BA38") + 
@@ -188,7 +188,7 @@ mvpa_rr_figure <- ggplot(res_mvpa[which(res_mvpa$type=="rr"),],aes(x=MVPA,y=est)
   ylab("Relative risk") +
   xlab("Minutes of moderate/vigorous activity per day") + 
   scale_x_continuous(breaks=seq(0,100,10)) +
-  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.2,0.2),limits=c(0.0,1.2)) +
+  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.4,0.2),limits=c(0.0,1.4)) +
   theme_light() + 
   theme(legend.position = "bottom") +
   figure_theme
@@ -204,9 +204,9 @@ mvpa_rd_figure <- ggplot(res_mvpa[which(res_mvpa$type=="rd"),],aes(x=MVPA,y=est)
   figure_theme
 mvpa_comb_figure <- ggarrange(mvpa_rr_figure,mvpa_rd_figure,nrow=2)
 
-ggsave(paste0(workdir,"Results/mvpa rr 20250302.png"),mvpa_rr_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/mvpa rd 20250302.png"),mvpa_rd_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/mvpa rr and rd 20250302.png"),mvpa_comb_figure,width = 2100,height = 2100,units = "px")
+ggsave(paste0(workdir,"Results/mvpa rr 20250501.png"),mvpa_rr_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/mvpa rd 20250501.png"),mvpa_rd_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/mvpa rr and rd 20250501.png"),mvpa_comb_figure,width = 2100,height = 2100,units = "px")
 
 both_rr_figure <- ggplot(meld_data[which(meld_data$type=="rr"),],aes(x=LPA,y=est, colour=MVPA)) + 
   geom_line() + 
@@ -214,7 +214,7 @@ both_rr_figure <- ggplot(meld_data[which(meld_data$type=="rr"),],aes(x=LPA,y=est
   ylab("Relative risk") +
   xlab("Minutes of light activity per day") + 
   scale_x_continuous(breaks=seq(0,600,60)) +
-  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.2,0.2),limits=c(0.0,1.2)) +
+  scale_y_continuous(labels=scaleFUN, breaks=seq(0.0,1.6,0.2),limits=c(0.0,1.6)) +
   theme_light() + 
   theme(legend.position = "bottom") +
   figure_theme
@@ -229,7 +229,7 @@ both_rd_figure <- ggplot(meld_data[which(meld_data$type=="rd"),],aes(x=LPA,y=est
   theme(legend.position = "bottom") +
   figure_theme
 both_comb_figure <- ggarrange(both_rr_figure,both_rd_figure,nrow=2)
-
-ggsave(paste0(workdir,"Results/both rr 20250302.png"),both_rr_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/both rd 20250302.png"),both_rd_figure,width = 2100,height = 1100,units = "px")
-ggsave(paste0(workdir,"Results/both rr and rd 20250302.png"),both_comb_figure,width = 2100,height = 2100,units = "px")
+both_comb_figure
+ggsave(paste0(workdir,"Results/both rr 20250501.png"),both_rr_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/both rd 20250501.png"),both_rd_figure,width = 2100,height = 1100,units = "px")
+ggsave(paste0(workdir,"Results/both rr and rd 20250501.png"),both_comb_figure,width = 2100,height = 2100,units = "px")

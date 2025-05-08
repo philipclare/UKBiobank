@@ -36,25 +36,27 @@ lapply(libs, library, character.only = TRUE)
 get_fit <- function (data) {
   
   fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = 2) + ns(LPA, df = 2) + ns(MVPA*LPA, df = 4) + 
-                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 1) + 
+                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 3) + 
                  sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
                  b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
                  b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
-                 b_health_good + b_health_fair + b_health_poor + 
-                 b_bmi_underweight + I(b_bmi_underweight*MVPA) + I(b_bmi_underweight*LPA) + 
-                 b_bmi_overweight + I(b_bmi_overweight*MVPA) + I(b_bmi_overweight*LPA) + 
-                 b_bmi_obese + I(b_bmi_obese*MVPA) + I(b_bmi_obese*LPA) + 
+                 b_health_good + b_health_fair + b_health_poor +
+                 b_bmi_underweight + I(b_bmi_underweight*MVPA) + I(b_bmi_underweight*LPA) +
+                 b_bmi_overweight + I(b_bmi_overweight*MVPA) + I(b_bmi_overweight*LPA) +
+                 b_bmi_obese + I(b_bmi_obese*MVPA) + I(b_bmi_obese*LPA) +
                  b_alc_ex + b_alc_current_infrequent + b_alc_current_weekly + 
-                 b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
-                 I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
-                 seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                 TDI_bsl + valid_weartime_indays,
-               data = data)
+                 b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current +
+                 I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score +
+                 seasonality_Spring + seasonality_Summer + seasonality_Winter +
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
+               data = data,
+               df = 3)
 }
 
 get_results_sex <- function (fit) {
   
-  newdata <- data.frame(fit@data)[,-36]
+  newdata <- data.frame(fit@data)
   
   mvpa <- quantile(newdata$MVPA,p=c(0.1,0.5,0.9))
   sex <- c(0,1)
@@ -98,7 +100,7 @@ get_results_sex <- function (fit) {
 
 get_results_age <- function (fit) {
   
-  data <- data.frame(fit@data)[,-36]
+  data <- data.frame(fit@data)
   
   mvpa <- quantile(data$MVPA,p=c(0.1,0.5,0.9))
   age <- c(1,2,3)
@@ -161,7 +163,9 @@ meld_results <- function (res) {
 
 construct_cis <- function (res) {
   res$conf.low <- res$est - qnorm(0.975)*res$se
+  res$conf.low <- ifelse(res$conf.low<0,0,res$conf.low)
   res$conf.high <- res$est + qnorm(0.975)*res$se
+  res$conf.high <- ifelse(res$conf.high>1,1,res$conf.high)
   
   res$logitest <- logit(res$est)
   res$logitse <- sapply(seq(1,nrow(res)), function (x) {
@@ -186,29 +190,40 @@ construct_cis <- function (res) {
 data <- readRDS(paste0(workdir,"Data/primary_analysis_data.rds"))
 
 ######################################################################################
-# 4. Create cluster for parallel processing
+# 4. Define figure theme
 #-------------------------------------------------------------------------------------
 
-cl <- makeCluster(4)
+figure_theme <- theme_classic() +
+  theme(panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),
+        axis.line = element_line(colour = 'grey80', linewidth = 0.3),
+        axis.ticks = element_line(colour = "grey80", linewidth = 0.3),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.x = element_text(hjust = -0.01),
+        legend.position="bottom")
+
+######################################################################################
+# 5. Create cluster for parallel processing
+#-------------------------------------------------------------------------------------
+
+cl <- makeCluster(2)
 clusterExport(cl,c("libs","data"))
 clusterEvalQ(cl, lapply(libs, library, character.only = TRUE))
 
 ######################################################################################
-# 5. Run model in each imputation and pool using Rubin's rules
+# 6. Run model in each imputation
 #-------------------------------------------------------------------------------------
 
-start <- Sys.time()
 model_fit <- parLapply(cl, data, get_fit)
-results_sex <- parLapply(cl, model_fit, get_results_sex)
-results_age <- parLapply(cl, model_fit, get_results_age)
-end <- Sys.time()
-end-start
 
 ######################################################################################
-# 6. Pool results over imputations
+# 7. Generate predictions and create figures by sex
 #-------------------------------------------------------------------------------------
 
-# 6.1 Results by sex
+# 7.1. Generate predictions by sex
+results_sex <- parLapply(cl, model_fit, get_results_sex)
+
+# 7.2. Pool sex results over imputations using Rubin's rules
 sex_res <- meld_results(results_sex)
 
 sex_res <- merge(pivot_longer(data.frame(sex_res[[1]]),
@@ -232,7 +247,36 @@ sex_res$MVPA <- factor(sex_res$MVPA,
 
 sex_res <- construct_cis(sex_res)
 
-# 6.2 Results by age category
+# 7.3. Create figure by sex
+sex_figure <- ggplot(sex_res,aes(x=LPA, y=est, colour=MVPA)) + 
+  geom_line() + 
+  geom_ribbon(aes(ymin=conf.low,ymax=conf.high, fill=MVPA),alpha=0.3,colour=NA) +
+  ylab("Probability of death (%)") +
+  xlab("Minutes of light activity per day") + 
+  scale_x_continuous(breaks=seq(0,600,60)) +
+  scale_y_continuous(labels = scales::percent, breaks=seq(0.0,0.35,0.05),limits=c(0.0,0.35)) +
+  theme_light() + 
+  theme(legend.position = "bottom") +
+  facet_wrap(sex ~ .,
+             ncol=1,
+             labeller=labeller(sex=c(Female="(a) Female",
+                                     Male="(b) Male"))) +
+  figure_theme
+
+sex_figure
+
+# 7.4. Save sex results and figure
+saveRDS(results_sex,paste0(workdir,"Results/predictions by sex 20250501.rds"))
+ggsave(paste0(workdir,"Results/figure by sex 20250501.png"),sex_figure)
+
+######################################################################################
+# 8. Generate predictions and create figures by age category
+#-------------------------------------------------------------------------------------
+
+# 8.1. Generate predictions by age category
+results_age <- parLapply(cl, model_fit, get_results_age)
+
+# 8.2. Pool age results over imputations using Rubin's rules
 age_res <- meld_results(results_age)
 
 age_res <- merge(pivot_longer(data.frame(age_res[[1]]),
@@ -254,38 +298,7 @@ age_res$MVPA <- factor(age_res$MVPA,
 
 age_res <- construct_cis(age_res)
 
-######################################################################################
-# 7. Define theme
-#-------------------------------------------------------------------------------------
-
-figure_theme <- theme_classic() +
-  theme(panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),
-        axis.line = element_line(colour = 'grey80', linewidth = 0.3),
-        axis.ticks = element_line(colour = "grey80", linewidth = 0.3),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        strip.text.x = element_text(hjust = -0.01),
-        legend.position="bottom")
-
-######################################################################################
-# 8. Create figures
-#-------------------------------------------------------------------------------------
-
-sex_figure <- ggplot(sex_res,aes(x=LPA, y=est, colour=MVPA)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=conf.low,ymax=conf.high, fill=MVPA),alpha=0.3,colour=NA) +
-  ylab("Probability of death (%)") +
-  xlab("Minutes of light activity per day") + 
-  scale_x_continuous(breaks=seq(0,600,60)) +
-  scale_y_continuous(labels = scales::percent, breaks=seq(0.0,0.35,0.05),limits=c(0.0,0.35)) +
-  theme_light() + 
-  theme(legend.position = "bottom") +
-  facet_wrap(sex ~ .,
-             ncol=1,
-             labeller=labeller(sex=c(Female="(a) Female",
-                                         Male="(b) Male"))) +
-  figure_theme
-
+# 8.3. Create figure by age category
 age_labs = c("(a) Ages 40-49","(b) Ages 50-59","(c) Ages 60-69")
 names(age_labs) = c('1','2','3')
 
@@ -303,14 +316,8 @@ age_figure <- ggplot(age_res,aes(x=LPA, y=est, colour=MVPA)) +
              labeller=as_labeller(age_labs)) +
   figure_theme
 
-sex_figure
 age_figure
 
-######################################################################################
-# 9. Save each imputed analysis set
-#-------------------------------------------------------------------------------------
-
-saveRDS(results_sex,paste0(workdir,"Results/predictions by sex 20250302.rds"))
-ggsave(paste0(workdir,"Results/figure by sex 20241121.png"),sex_figure)
-saveRDS(results_age,paste0(workdir,"Results/predictions by age 20250302.rds"))
-ggsave(paste0(workdir,"Results/figure by age 20241121.png"),age_figure)
+# 8.4. Save age results and figure
+saveRDS(results_age,paste0(workdir,"Results/predictions by age 20250501.rds"))
+ggsave(paste0(workdir,"Results/figure by age 20250501.png"),age_figure)

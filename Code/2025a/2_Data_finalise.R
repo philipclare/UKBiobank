@@ -16,7 +16,7 @@ if (Sys.getenv("NCPUS")!="") {
   .libPaths("/home/z3312911/RPackages/")
   workdir <- "/home/z3312911/LPA/"
 } else if (Sys.info()[['sysname']]=="Windows") {
-  workdir <- "D:/The University of Sydney (Staff)/Susan Luo - data and R/"
+  workdir <- "C:/Users/pcla5984/The University of Sydney (Staff)/Susan Luo - data and R/"
 } else if (Sys.info()[['sysname']]=="Darwin") {
   workdir <- "/Users/pjclare/Library/CloudStorage/OneDrive-SharedLibraries-TheUniversityofSydney(Staff)/Susan Luo - data and R/" # MAC
 }
@@ -39,14 +39,20 @@ rm(missing)
 data_clean <- function (data) {
   data <- data %>%
     select(n_eid, center_0, age_acc, sex, ethnicity, edu_0_cat, HHincome_0_cat, TDI_bsl, HealthRating_0_cat, employment_0_cat, 
-           smk_0_cat, alc_0_cat, alc_0_freq_cat, diet_score, bmi_0_cat, seasonality, valid_weartime_indays, f_death, death, MVPA_MINS_06_22_ML, 
-           LPA_MINS_06_22_ML, MVPA_cat, LPA_cat) %>% 
-    filter(f_death > 0) # n=71,875
+           smk_0_cat, alc_0_cat, alc_0_freq_cat, diet_score, bmi_0_cat, seasonality, valid_weartime_indays, 
+           total_PA_MET, sleep_cat, diabetes, hypertension, highcholesterol, affective_disorder, 
+           f_death, death, MVPA_MINS_06_22_ML, LPA_MINS_06_22_ML, MVPA_cat, LPA_cat)  # n=71,875
   
   data$center_0 <- droplevels(data$center_0) 
   
   data <- data %>%
     rename(
+      b_met = total_PA_MET, 
+      b_sleep_cat = sleep_cat, 
+      b_diabetes = diabetes, 
+      b_hypertension = hypertension, 
+      b_highcholesterol = highcholesterol, 
+      b_affective_disorder = affective_disorder,
       b_educ = edu_0_cat,
       b_income = HHincome_0_cat,
       b_health = HealthRating_0_cat,
@@ -101,6 +107,9 @@ data_clean <- function (data) {
   data$b_smk <- factor(data$b_smk,
                        levels=c(0,1,2),
                        labels=c("never","ex","current"))
+  data$b_sleep_cat <- factor(data$b_sleep_cat,
+                       levels=c(1,2,3),
+                       labels=c("<7 hrs/day","7-9 hrs/day",">9 hrs/day"))
   
   data <- data %>%
     select(-c(MVPA_cat,LPA_cat,alc_0_cat,alc_0_freq_cat))
@@ -111,7 +120,7 @@ data_clean <- function (data) {
 # 3. Load and finalise data
 #-------------------------------------------------------------------------------------
 
-data <- readRDS(paste0(workdir,"Data/cleaned_data.rds")) # n=71,878
+data <- readRDS(paste0(workdir,"Data/cleaned_data.rds")) # n=71,715
 data <- data_clean(data)
 
 complete_data <- data[complete.cases(data),] 

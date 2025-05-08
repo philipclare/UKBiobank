@@ -16,7 +16,7 @@ if (Sys.getenv("NCPUS")!="") {
   .libPaths("/home/z3312911/RPackages/")
   workdir <- "/home/z3312911/LPA/"
 } else if (Sys.info()[['sysname']]=="Windows") {
-  workdir <- "D:/The University of Sydney (Staff)/Susan Luo - data and R/"
+  workdir <- "C:/Users/pcla5984/The University of Sydney (Staff)/Susan Luo - data and R/"
 } else if (Sys.info()[['sysname']]=="Darwin") {
   workdir <- "/Users/pjclare/Library/CloudStorage/OneDrive-SharedLibraries-TheUniversityofSydney(Staff)/Susan Luo - data and R/" # MAC
 }
@@ -43,7 +43,7 @@ if (Sys.info()[['sysname']]=="Linux") {
 get_fit <- function (data) {
   
   fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = 2) + ns(LPA, df = 2) + ns(MVPA*LPA, df = 4) + 
-                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 1) + 
+                 ns(logage, df = 1) + ns(logage*MVPA, df = 2) + ns(logage*LPA, df = 3) + 
                  sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
                  b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
                  b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
@@ -55,7 +55,8 @@ get_fit <- function (data) {
                  b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
                  I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
                  seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                 TDI_bsl + valid_weartime_indays,
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                data = data)
 }
 
@@ -72,7 +73,7 @@ diff_lpa <- function (fit) {
                              vcov=TRUE,
                              type="fail")
   
-  ref_index <- which(predict$LPA==0)
+  ref_index <- which(predict$LPA==60)
   var <- vcov(predict)
   
   predict$rd <- predict$estimate-predict$estimate[ref_index]
@@ -83,7 +84,7 @@ diff_lpa <- function (fit) {
   },var=var,ref_index=ref_index))
   
   predict$rr <- predict$estimate/predict[ref_index,]$estimate
-  predict$rr.se <- c(0,do.call(rbind,lapply(seq(2,nrow(predict)), function (x,var,ref_index) {
+  predict$rr.se <- c(do.call(rbind,lapply(seq(1,nrow(predict)), function (x,var,ref_index) {
     m <- predict$estimate[c(x,ref_index)]
     newvar <- var[c(x,ref_index),c(x,ref_index)]
     msm::deltamethod(~x1/x2,m,newvar)
@@ -117,7 +118,7 @@ diff_mvpa <- function (fit) {
   },var=var,ref_index=ref_index))
   
   predict$rr <- predict$estimate/predict[ref_index,]$estimate
-  predict$rr.se <- c(0,do.call(rbind,lapply(seq(2,nrow(predict)), function (x,var,ref_index) {
+  predict$rr.se <- c(do.call(rbind,lapply(seq(1,nrow(predict)), function (x,var,ref_index) {
     m <- predict$estimate[c(x,ref_index)]
     newvar <- var[c(x,ref_index),c(x,ref_index)]
     msm::deltamethod(~x1/x2,m,newvar)
@@ -141,7 +142,7 @@ diff_both <- function (fit) {
                                vcov=TRUE,
                                type="fail")
     
-    ref_index <- which(predict$LPA==0)
+    ref_index <- which(predict$LPA==60)
     var <- vcov(predict)
     
     predict$rd <- predict$estimate-predict$estimate[ref_index]
@@ -152,7 +153,7 @@ diff_both <- function (fit) {
     },var=var,ref_index=ref_index))
     
     predict$rr <- predict$estimate/predict[ref_index,]$estimate
-    predict$rr.se <- c(0,do.call(rbind,lapply(seq(2,nrow(predict)), function (x,var,ref_index) {
+    predict$rr.se <- c(do.call(rbind,lapply(seq(1,nrow(predict)), function (x,var,ref_index) {
       m <- predict$estimate[c(x,ref_index)]
       newvar <- var[c(x,ref_index),c(x,ref_index)]
       msm::deltamethod(~x1/x2,m,newvar)
@@ -170,7 +171,7 @@ diff_both <- function (fit) {
 
 data <- readRDS(paste0(workdir,"Data/primary_analysis_data.rds"))
 
-data <- data[[iteration]]
+data <- data[[args[1]]]
 
 ######################################################################################
 # 4. Run model in each imputation and pool using Rubin's rules
@@ -215,11 +216,11 @@ se_lpa_rd <- pivot_wider(lpa[,c("LPA","rd.se")],
                          names_sep = "_",
                          values_from = c("rd.se"))
 
-b_mvpa_pr <- pivot_wider(lpa[,c("MVPA","estimate")],
+b_mvpa_pr <- pivot_wider(mvpa[,c("MVPA","estimate")],
                         names_from = c("MVPA"),
                         names_sep = "_",
                         values_from = c("estimate"))
-se_mvpa_pr <- pivot_wider(lpa[,c("MVPA","std.error")],
+se_mvpa_pr <- pivot_wider(mvpa[,c("MVPA","std.error")],
                          names_from = c("MVPA"),
                          names_sep = "_",
                          values_from = c("std.error"))
@@ -295,6 +296,6 @@ res_both <- list(b_both_pr,se_both_pr,b_both_rr,se_both_rr,b_both_rd,se_both_rd)
 # 5. Save results
 #-------------------------------------------------------------------------------------
 
-saveRDS(res_lpa,paste0(workdir,"Results/lpa relative ",iteration,".rds"))
-saveRDS(res_mvpa,paste0(workdir,"Results/mvpa relative ",iteration,".rds"))
-saveRDS(res_both,paste0(workdir,"Results/both relative ",iteration,".rds"))
+saveRDS(res_lpa,paste0(workdir,"Results/lpa relative ",args[[1]],".rds"))
+saveRDS(res_mvpa,paste0(workdir,"Results/mvpa relative ",args[[1]],".rds"))
+saveRDS(res_both,paste0(workdir,"Results/both relative ",args[[1]],".rds"))

@@ -22,7 +22,7 @@ if (Sys.getenv("NCPUS")!="") {
 }
 
 # 1.2. Define packages to be used, check if installed, and load
-libs <- c("survival","rstpm2","parallel","splines")
+libs <- c("survival","rstpm2","parallel","splines","XLConnect")
 missing <- !libs %in% installed.packages()
 if (any(missing)) {
   install.packages(libs[missing])
@@ -65,10 +65,13 @@ fit_dist <- do.call(rbind,parLapply(cl, df_dist, function (x) {
                  b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
                  I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
                  seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                 TDI_bsl + valid_weartime_indays,
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                data = data,
                df = x)
   c(x,AIC(fit),BIC(fit))
+  
+
   
 }))
 
@@ -105,7 +108,8 @@ fit_act <- do.call(rbind,parLapply(cl, df_pa, function (x,df_pa,df) {
                      b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
                      I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
                      seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                     TDI_bsl + valid_weartime_indays,
+                     TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                     b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                    data = data,
                    df = df)
       c(x,y,z,AIC(fit),BIC(fit))
@@ -146,7 +150,8 @@ fit_age <- do.call(rbind,parLapply(cl, df_age, function (x,df_age,df,mvpa_df,lpa
                      b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
                      I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
                      seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-                     TDI_bsl + valid_weartime_indays,
+                     TDI_bsl + valid_weartime_indays + ns(b_met, df = 1) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                     b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
                    data = data,
                    df = df)
       c(x,y,z,AIC(fit),BIC(fit))
@@ -161,9 +166,47 @@ best_age_bic <- arrayInd(which.min(fit_age[,5]), dim(fit_age))
 paste0("The best fitting model based on AIC has df=",fit_age[best_age_aic[[1]],1]," for age, df=",fit_age[best_age_aic[[1]],2]," for age*MVPA, and df=",fit_age[best_age_aic[[1]],3]," for age*LPA")
 paste0("The best fitting model based on BIC has df=",fit_age[best_age_bic[[1]],1]," for age, df=",fit_age[best_age_bic[[1]],2]," for age*MVPA, and df=",fit_age[best_age_bic[[1]],3]," for age*LPA")
 
-age_df <- fit_age[best_act_aic[[1]],1]
-agemvpa_df <- fit_age[best_act_aic[[1]],2]
-agelpa_df <- fit_age[best_act_aic[[1]],3]
+age_df <- fit_age[best_age_aic[[1]],1]
+agemvpa_df <- fit_age[best_age_aic[[1]],2]
+agelpa_df <- fit_age[best_age_aic[[1]],3]
+
+######################################################################################
+# 7. Check splines for baseline mvpa
+#-------------------------------------------------------------------------------------
+
+# 7.1. Run all models and save AIC/BIC
+df_b_mvpa <- seq(1,6)
+fit_b_mvpa <- do.call(rbind,parLapply(cl, df_b_mvpa, function (x,df,mvpa_df,lpa_df,mvpalpa_df,age_df,agemvpa_df,agelpa_df) {
+  
+  fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = mvpa_df) + ns(LPA, df = lpa_df) + ns(MVPA*LPA, df = mvpalpa_df) + 
+                 ns(logage, df = age_df) + ns(logage*MVPA, df = agemvpa_df) + ns(logage*LPA, df = agelpa_df) + 
+                 sex_male + I(sex_male*MVPA) + I(sex_male*LPA) + ethnicity_nonwhite + 
+                 b_educ_vocational + b_educ_olevels + b_educ_alevels + b_educ_other + 
+                 b_income_18to31k + b_income_31to52k + b_income_52to100k + b_income_100kplus + b_employ_other +
+                 b_health_good + b_health_fair + b_health_poor + 
+                 b_bmi_underweight + I(b_bmi_underweight*MVPA) + I(b_bmi_underweight*LPA) + 
+                 b_bmi_overweight + I(b_bmi_overweight*MVPA) + I(b_bmi_overweight*LPA) + 
+                 b_bmi_obese + I(b_bmi_obese*MVPA) + I(b_bmi_obese*LPA) + 
+                 b_alc_ex + b_alc_current_infrequent + b_alc_current_weekly + 
+                 b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
+                 I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
+                 seasonality_Spring + seasonality_Summer + seasonality_Winter + 
+                 TDI_bsl + valid_weartime_indays + ns(b_met, df = x) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+                 b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
+               data = data,
+               df = df)
+  c(x,AIC(fit),BIC(fit))
+  
+},df=df,mvpa_df=mvpa_df,lpa_df=lpa_df,mvpalpa_df=mvpalpa_df,age_df=age_df,agemvpa_df=agemvpa_df,agelpa_df=agelpa_df))
+
+best_b_mvpa_aic <- arrayInd(which.min(fit_b_mvpa[,2]), dim(fit_b_mvpa))
+best_b_mvpa_bic <- arrayInd(which.min(fit_b_mvpa[,3]), dim(fit_b_mvpa))
+
+# 6.2. Print the best fitting models based on AIC/BIC
+paste0("The best fitting model based on AIC has df=",fit_b_mvpa[best_b_mvpa_aic[[1]],1])
+paste0("The best fitting model based on BIC has df=",fit_b_mvpa[best_b_mvpa_bic[[1]],1])
+
+b_mvpa_df <- fit_b_mvpa[best_b_mvpa_aic[[1]],1]
 
 ######################################################################################
 # 7. Fit final complete case model for shiny app
@@ -182,7 +225,8 @@ fit <- stpm2(Surv(f_death, death) ~ ns(MVPA, df = mvpa_df) + ns(LPA, df = lpa_df
                b_smk_ex + I(b_smk_ex*MVPA) + I(b_smk_ex*LPA) + b_smk_current + 
                I(b_smk_current*MVPA) + I(b_smk_current*LPA) + diet_score + 
                seasonality_Spring + seasonality_Summer + seasonality_Winter + 
-               TDI_bsl + valid_weartime_indays,
+               TDI_bsl + valid_weartime_indays + ns(b_met, df = b_mvpa_df) + b_sleep_cat_enough + b_sleep_cat_toomuch +
+               b_diabetes + b_hypertension + b_highcholesterol + b_affective_disorder,
              data = data,
              df = df)
 
